@@ -1,0 +1,51 @@
+version: '3.3'
+
+services:
+  nginx:
+    image: jwilder/nginx-proxy
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./data/certs:/etc/nginx/certs:rw
+      - ./data/vhost.d:/etc/nginx/vhost.d:rw  # Позволяет nginx имел доступ на запись для vhost.d
+      - ./data/html:/usr/share/nginx/html:rw  # Позволяет изменения для Let's Encrypt
+    networks:
+      - nginx-net
+
+  nginx-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-letsencrypt
+    depends_on:
+      - nginx
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/certs:/etc/nginx/certs:rw
+      - ./data/vhost.d:/etc/nginx/vhost.d
+      - ./data/html:/usr/share/nginx/html:rw
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx
+      - LETSENCRYPT_EMAIL=example@gmail.com  # Укажите настоящий 
+    networks:
+      - nginx-net
+
+  flask_app:
+    build: .
+    container_name: flask_app
+    environment:
+      - VIRTUAL_HOST=example.info # Укажите настоящий 
+      - LETSENCRYPT_HOST=example.info # Укажите настоящий 
+      - LETSENCRYPT_EMAIL=example@gmail.com # Укажите настоящий 
+    networks:
+      - nginx-net
+    expose:
+      - "5000"
+
+networks:
+  nginx-net:
+    driver: bridge
+
+
+
