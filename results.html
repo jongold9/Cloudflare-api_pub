@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Results</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 80%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #0056b3;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Search Results for "{{ domain }}"</h1>
+
+    {% if results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Account</th>
+                    <th>Domain Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account_name, zone_id, zone_name in results %}
+                    <tr>
+                        <td>{{ account_name }}</td>
+                        <td>{{ zone_name }}</td>
+                        <td>
+                            <form action="{{ url_for('purge', zone_name=zone_name, account_name=account_name) }}" method="post">
+                                <button type="submit">Clear Cache</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Domain not found.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('index') }}">Return to Home</a>
+</body>
+</html>
